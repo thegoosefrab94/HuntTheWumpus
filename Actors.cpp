@@ -49,7 +49,7 @@ namespace Wump
 		if (!cv)
 			return;
 
-		if (cv != m_pHere->ToLeft() &&	// if the given cave is not on of the ones connected
+		if (cv != m_pHere->ToLeft() &&	// if the given cave is not one connected
 			cv != m_pHere->ToMiddle() &&
 			cv != m_pHere->ToRight())
 			return;
