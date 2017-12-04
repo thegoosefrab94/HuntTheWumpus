@@ -1,31 +1,24 @@
 #pragma once
-#include <memory>	// only used to be able to use std::size_t
+#include "Actors.h"
+#include "CaveBuilder.h"
+#include "ObserverBases.h"
+#include <fstream>
 
-namespace Wump
-{
-	std::size_t NumRoll(std::size_t, std::size_t);
-	class Player;	// foward declares
-	class Wumpus;
-	class Cave;
-
-	class CaveSystem
-	{
+namespace Wump {
+	class CaveSystem : public Observer {
 	public:
-		CaveSystem();
-		bool Init();
-		void AttachPlayer(Player* pPlay) { m_pPlayer = pPlay; }	// attach the player to the cavesystem
-		void Destroy();
-		void Update();
-
-		void PlayerShot();			// a command to send into the system that the player shot an arrow
-
-		const Cave* Start() { return m_pStart; }
-		~CaveSystem();
+		CaveSystem(std::ostream& os) : output{ os }, pEnemyWumpus{ nullptr }, pPlayer{ nullptr }, pCave{ nullptr }, areWeDone{ false } {  }
+		virtual void OnNotify(Actor*, Event);
+		virtual void CreateSystem(CaveBuilder&);
+		void AttachPlayer(Player*);
+		virtual ~CaveSystem();
 	private:
-		bool InitSystem();
-		Wumpus* m_pWumpus;
-		Player* m_pPlayer;
-		Cave* m_pStart;
-		Cave* m_pEnd;	// only used in tracking the end
+		void HandlePlayer(Actor* actor, Event e);
+		std::ostream& output;
+		std::ofstream wumpFile{ "wumpus.txt"};
+		Actor* pEnemyWumpus;
+		Actor* pPlayer;
+		Cave* pCave;
+		bool areWeDone;
 	};
 }

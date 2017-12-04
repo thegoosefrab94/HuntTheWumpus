@@ -1,59 +1,52 @@
 #pragma once
-#include <iostream>
-#include "Cave.h"
+#include "CaveSites.h"
+#include "ObserverBases.h"
 
 namespace Wump
 {
-	class Player
-	{
+	class Actor : public Subject {
+		friend class Room;
+		friend class Tunnel;
 	public:
-		explicit Player(const Cave* cv);	// Constructor will not change the cave its given
-		Player(const Player&) = delete;				// No copying
-		Player& operator=(const Player&) = delete;	// No assigning
-
-		void Move(const Cave* cv);
-		void Shoot(Cave* cv);
-		void Die();
-		void Sense() const;
-		void ThisCave();
-		
-		void Win();
-
-		bool IsAlive() const { return m_bAlive; }
-		bool IsDone() const { return m_bIsdone; }
-		const Cave* Here() const;
-
-		~Player() {  }								// Destructor doesn't do anything
-	private:
-		void Report(std::ostream& os, const Cave* cv) const;
-		void ShootLeft(Cave* cv);
-		void ShootRight(Cave * cv);
-		const Cave* m_pHere;
-		int m_Arrows{ 5 };	// Always five
-		bool m_bAlive;
-		bool m_bIsdone;
+		Actor(std::ostream& os) : output{ os }, alive { true }, pLocation{ nullptr } {  }
+		virtual bool IsPlayer() const { return false; }
+		virtual void Move(Direction) = 0;
+		bool IsAlive() const { return alive; }
+		virtual void Kill();
+		Room* Location()  { return pLocation; }	// Return is not const because the Actors could change it
+		virtual ~Actor() {  }
+	protected:
+		std::ostream& output;
+		bool alive;
+		Room* pLocation;
 	};
 
-	class Wumpus
-	{
+	class Player : public Actor {
 	public:
-		explicit Wumpus(Cave* cv);
-		Wumpus(const Wumpus&) = delete;
-		Wumpus& operator=(const Wumpus&) = delete;
-
-		void Move(Cave* cv);
-		void Die();
-		void WakeUp();
-
-		bool IsAlive() const { return m_bAlive; }
-		bool IsAwake() const { return m_bAwake; }
-		const Cave* Here() const { return m_pHere; }
-
+		explicit Player(std::ostream&, Room*);
+		virtual void RegisterObserver(Observer*) override;
+		virtual void UnregisterObserver(Observer*) override;
+		virtual bool IsPlayer() const override { return true; }
+		virtual void Move(Direction) override;
+		virtual void Kill() override;
+		void Shoot(Direction);
+		virtual ~Player() {  }
 	private:
-		Cave* m_pHere;
-		// m_PastTrap used to make sure the wumpus will be main trap but when it moves will resest the trap
-		Cave::Trap m_PastTrap;
-		bool m_bAlive;
-		bool m_bAwake;
+		std::size_t arrows;
+	};
+	
+	class Wumpus : public Actor {
+	public:
+		explicit Wumpus(std::ostream&, Room*);
+		virtual void RegisterObserver(Observer*) override;
+		virtual void UnregisterObserver(Observer*) override;
+		virtual bool IsPlayer() const override { return false; }
+		virtual void Move(Direction);
+		virtual void Kill() override;
+		void WakeUp() { awake = true; }
+		virtual ~Wumpus() {  }
+	private:
+		bool awake;
+		Room::Trap pastTrap;
 	};
 }
