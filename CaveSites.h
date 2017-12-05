@@ -1,9 +1,9 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <unordered_set>
 
 namespace Wump {
-
 	enum class Direction { north, south, east, west };
 	Direction OtherDirection(Direction d);
 
@@ -12,6 +12,7 @@ namespace Wump {
 	class CaveSite {	// Base class for all parts of a cave
 	public:
 		using Output = std::ostream;
+		CaveSite() {  }
 		virtual void Enter(Actor*, Output&) = 0;	// All Enter functions return whether that site is safe to enter
 		virtual bool IsRoom() const = 0;	// I HATE THIS
 		virtual bool IsTunnel() const = 0;	// However I can't think of a better way to test
@@ -38,14 +39,13 @@ namespace Wump {
 		bool IsTrapped() const;
 
 		virtual  ~Room() {  }
-	private:
-		Trap m_Trap;
 	protected:
 		CaveSite* m_pNorth;
 		CaveSite* m_pSouth;
 		CaveSite* m_pEast;
 		CaveSite* m_pWest;
 		std::size_t m_RoomNum;
+		Trap m_Trap;
 	};
 
 	class Tunnel : public CaveSite {	// Tunnel connects two rooms together

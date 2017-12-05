@@ -55,6 +55,7 @@ int main()
 
 	do {
 		PrintIntro();
+		system.Restart();
 		player = new Player{ std::cout, system.Start() };
 		system.AttachPlayer(player);
 		while (!system.Done()) {

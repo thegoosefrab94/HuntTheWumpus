@@ -5,7 +5,7 @@ namespace Wump {
 
 	std::size_t NumRoll(std::size_t min, std::size_t max)		// Rolls a random number
 	{
-		static std::mt19937_64 gen;
+		static std::default_random_engine gen;
 		static std::uniform_int_distribution<std::size_t> dis(min, max);
 		return dis(gen);
 	}
@@ -17,11 +17,11 @@ namespace Wump {
 		else if (!actor->IsPlayer()) {	// For any other actor if only handles move and win
 			switch (e) {
 			case Event::move:
-				if (pEnemyWumpus->Location() == pPlayer->Location())
-					OnNotify(pPlayer, Event::lose);
+				if (m_pEnemyWumpus->Location() == m_pPlayer->Location())
+					OnNotify(m_pPlayer, Event::lose);
 				break;
 			case Event::win:
-				OnNotify(pPlayer, e);
+				OnNotify(m_pPlayer, e);
 			}
 		}
 	}
@@ -33,8 +33,8 @@ namespace Wump {
 				switch (playerCave->GetTrap()) {
 				case Room::bat: {
 					output << "A bat swoops down and moves you to a random cave!\n";
-					auto randomRoom = NumRoll(0, pCave->Size());
-					auto* moveTo = pCave->RoomNumber(randomRoom);
+					auto randomRoom = NumRoll(0, m_pCave->Size());
+					auto* moveTo = m_pCave->RoomNumber(randomRoom);
 					moveTo->Enter(actor, output);
 					break;
 				}
@@ -44,7 +44,8 @@ namespace Wump {
 					break;
 				}
 				case Room::wumpus: {
-					if (pEnemyWumpus->IsAlive())
+					output << "You encounter the wumpus!\n";
+					if (m_pEnemyWumpus->IsAlive())
 						actor->Kill();
 					else
 						OnNotify(actor, Event::win);
@@ -55,11 +56,11 @@ namespace Wump {
 			break;
 		}
 		case Event::shoot:
-			if (!pEnemyWumpus->Location()->IsTrapped())	// Is the cave the wumpus is in no longer trapped?
-				pEnemyWumpus->Kill();					// Then wumpus is dead
+			if (!m_pEnemyWumpus->Location()->IsTrapped())	// Is the cave the wumpus is in no longer trapped?
+				m_pEnemyWumpus->Kill();					// Then wumpus is dead
 			else {
 				auto randDirection = NumRoll(std::size_t(Direction::north), std::size_t(Direction::west));
-				pEnemyWumpus->Move(Direction(randDirection));
+				m_pEnemyWumpus->Move(Direction(randDirection));
 			}
 			break;
 
@@ -73,12 +74,13 @@ namespace Wump {
 			areWeDone = true;
 		}
 	}
+	// Creates a dodecahedron of rooms and tunnels
 	void CaveSystem::CreateSystem(CaveBuilder& builder) {
 		builder.CreateCave();
 		std::size_t current = 0, prev = 0, startOfLoop = 0;;
 		builder.CreateRoom(current);
 		prev = current++;
-		for (std::size_t i = 0; i < 4; ++i) {
+		for (std::size_t i = 0; i < 4; ++i) {	// 5 rooms in the most outer loop
 			builder.CreateRoom(current);
 			builder.CreateTunnel(prev, current, Direction::west);
 			prev = current++;
@@ -89,10 +91,10 @@ namespace Wump {
 		startOfLoop = current;
 		prev = current++;
 		std::size_t outLoop = 1;
-		for (std::size_t i = 0; i < 9; ++i) {
+		for (std::size_t i = 0; i < 9; ++i) {	// 10 rooms in the middle loop
 			builder.CreateRoom(current);
 			builder.CreateTunnel(prev, current, Direction::west);
-			if (!(i % 2) && i != 0) {
+			if (i % 2) {
 				builder.CreateTunnel(current, outLoop, Direction::south);
 				outLoop++;
 			}
@@ -104,7 +106,7 @@ namespace Wump {
 		outLoop = startOfLoop + 1;
 		startOfLoop = current;
 		prev = current++;
-		for (std::size_t i = 0; i < 4; ++i) {
+		for (std::size_t i = 0; i < 4; ++i) {	// 5 rooms in the innermost loop
 			builder.CreateRoom(current);
 			builder.CreateTunnel(prev, current, Direction::west);
 			builder.CreateTunnel(current, outLoop, Direction::south);
@@ -112,31 +114,33 @@ namespace Wump {
 			outLoop += 2;
 		}
 		builder.CreateTunnel(prev, startOfLoop, Direction::west);
-		pCave = builder.GetCave();
+		m_pCave = builder.GetCave();
 		
-		auto numOfBats = NumRoll(1, 3);
-		auto numOfPits = NumRoll(1, 4);
+		auto numOfBats = NumRoll(1, 4);
+		auto numOfPits = NumRoll(1, 3);
 
 		for (std::size_t i = 0; i < numOfBats; ++i) {
-			auto randomCaveNum = NumRoll(1, pCave->Size());
-			auto* randCave = pCave->RoomNumber(randomCaveNum);
+			auto randomCaveNum = NumRoll(1, m_pCave->Size()-1);
+			auto* randCave = m_pCave->RoomNumber(randomCaveNum);
 			randCave->SetTrap(Room::bat);
 		}
 		for (std::size_t i = 0; i < numOfPits; ++i) {
-			auto randomCaveNum = NumRoll(1, pCave->Size());
-			auto* randCave = pCave->RoomNumber(randomCaveNum);
+			auto randomCaveNum = NumRoll(1, m_pCave->Size()-1);
+			auto* randCave = m_pCave->RoomNumber(randomCaveNum);
 			randCave->SetTrap(Room::pit);
 		}
-		auto wumpCave = NumRoll(5, pCave->Size());
-		pEnemyWumpus = new Wumpus(wumpFile, pCave->RoomNumber(wumpCave));
+		auto wumpCave = NumRoll(5, m_pCave->Size()-1);
+		wumpFile.open("wumpus.txt");
+		m_pEnemyWumpus = new Wumpus(wumpFile, m_pCave->RoomNumber(wumpCave));
+		m_pEnemyWumpus->RegisterObserver(this);
 	}
 	void CaveSystem::AttachPlayer(Player* play) {
-		pPlayer = play;
-		pPlayer->RegisterObserver(this);
+		m_pPlayer = play;
+		m_pPlayer->RegisterObserver(this);
 	}
 	CaveSystem::~CaveSystem() {
-		pPlayer->UnregisterObserver(this);
-		delete pEnemyWumpus;
-		delete pCave;
+		wumpFile.close();
+		delete m_pEnemyWumpus;
+		delete m_pCave;
 	}
 }

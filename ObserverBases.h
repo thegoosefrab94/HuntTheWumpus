@@ -1,3 +1,9 @@
+/* Uses the Observer pattern
+* Observer is the base class observer interface
+* Subject is the base class of things to watch
+* Subject will use notify to tell all of the observers in their list that something happened
+* Every observer then decides what to do with the notifications
+*/
 #pragma once
 #include <vector>
 

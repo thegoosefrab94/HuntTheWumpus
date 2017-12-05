@@ -17,10 +17,10 @@ namespace Wump {
 	}
 
 	Room::Room(std::size_t num) : m_RoomNum{ num }, m_Trap{ Trap::none },
-		m_pNorth{ nullptr }, m_pSouth{ nullptr }, m_pEast{ nullptr }, m_pWest{ nullptr }	{	}
+		m_pNorth{ nullptr }, m_pSouth{ nullptr }, m_pEast{ nullptr }, m_pWest{ nullptr } {	}
 	void Room::Enter(Actor* act, Output& os) {
-		os << "\nYou enter room " << GetNumber();
-		act->pLocation = this;
+		os << "You enter room " << GetNumber()<<'\n';
+		act->m_pLocation = this;
 	}
 	void Room::SetSide(Direction dir, CaveSite* newSite) {
 		switch (dir) {
@@ -57,10 +57,10 @@ namespace Wump {
 		return (m_Trap == pit || m_Trap == bat || m_Trap == wumpus);
 	}
 
-	Tunnel::Tunnel(Room* l, Room* r) : m_pLeft(l), m_pRight(r) {   }
+	Tunnel::Tunnel(Room* l, Room* r) : m_pLeft(l), m_pRight(r) {  }
 	void Tunnel::Enter(Actor* act, Output& os) {
-		os << "\nYou walk down the tunnel...";
-		act->pLocation = OtherSide(act->Location());
+		os << "You walk down the tunnel...\n";
+		OtherSide(act->Location())->Enter(act, os);
 	}
 	Room* Tunnel::OtherSide(Room * curr) {
 		if (curr)
@@ -75,10 +75,10 @@ namespace Wump {
 	}
 
 	void Wall::Enter(Actor* act, Output& os) {
-		os << "\nYou hit a wall!";
+		os << "You hit a wall!\n";
 	}
 
-	Cave::Cave() : m_Sites{}, m_Rooms{} {  }
+	Cave::Cave() : m_Sites{}, m_Rooms{} { }
 	void Cave::AddSite(CaveSite* newSite) {
 		m_Sites.insert(newSite);
 	}
@@ -108,6 +108,7 @@ namespace Wump {
 		}
 		if (iterator == m_Sites.end()) return;
 		// Erase the old one if its in the set
+		delete *iterator;
 		m_Sites.erase(iterator);
 		// Now insert the new site
 		// Ensures that if multiple sites are changed into one site, it is only added once
