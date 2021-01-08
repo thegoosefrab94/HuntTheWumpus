@@ -1,6 +1,6 @@
 #pragma once
-#include "CaveSites.h"
-#include "ObserverBases.h"
+#include "../CaveSites/CaveSites.h"
+#include "../utils/ObserverBases.h"
 
 namespace Wump
 {

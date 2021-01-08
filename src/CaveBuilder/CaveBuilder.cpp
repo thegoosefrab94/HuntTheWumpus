@@ -1,4 +1,5 @@
 #include "CaveBuilder.h"
+#include <iostream>
 
 namespace Wump {
 	void CaveBuilder::CreateCave() {

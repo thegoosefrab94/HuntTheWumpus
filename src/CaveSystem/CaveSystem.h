@@ -1,7 +1,7 @@
 #pragma once
-#include "Actors.h"
-#include "CaveBuilder.h"
-#include "ObserverBases.h"
+#include "../Actors/Actors.h"
+#include "../CaveBuilder/CaveBuilder.h"
+#include "../utils/ObserverBases.h"
 #include <fstream>
 
 namespace Wump {

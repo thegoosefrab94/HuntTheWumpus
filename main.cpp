@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "CaveSystem.h"
+#include "./src/CaveSystem/CaveSystem.h"
 
 
 const std::string moveCommand{ "move" };

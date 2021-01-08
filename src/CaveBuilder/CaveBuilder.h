@@ -1,10 +1,8 @@
 #pragma once
-#include "CaveSites.h"
+#include "../CaveSites/CaveSites.h"
 
 namespace Wump
 {
-	class Cave;
-
 	class CaveBuilder {	// Builds a cave from individual parts
 	public:
 		CaveBuilder() {  }	// Almost all virtual functions incase a later subclass needs to change something
