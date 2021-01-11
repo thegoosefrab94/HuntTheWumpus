@@ -91,9 +91,7 @@ namespace Wump {
 		os << "You hit a wall!\n";
 	}
 
-	Cave::Cave() {
-		m_Sites = SitesSet{};
-		m_Rooms = RoomSet{};
+	Cave::Cave(): m_Sites(), m_Rooms() {
 	}
 
 	void Cave::AddSite(CaveSite* newSite) {
@@ -134,7 +132,7 @@ namespace Wump {
 		// Now insert the new site
 		// Ensures that if multiple sites are changed into one site, it is only added once
 		//  and hence deleted once
-		m_Sites.insert(newSite);
+		m_Sites.insert(iterator, newSite);
 		// Dont need the return from insert or erase, theres not any work to do with them
 	}
 

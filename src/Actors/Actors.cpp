@@ -8,23 +8,27 @@ namespace Wump {
 	void Player::RegisterObserver(Observer* observe) {
 		observers.push_back(observe);
 	}
+
 	void Player::UnregisterObserver(Observer* observe) {
 		for (auto iterator = observers.begin(); iterator != observers.end(); ++iterator)
 			if (*iterator == observe) observers.erase(iterator);
 	}
+
 	void Player::Move(Direction moveTo) {
 		auto* move = m_pLocation->GetSide(moveTo); // Move the player first
 		move->Enter(this, output);
 		Notify(this, Event::move);	// Notify any observers
 	}
+
 	void Player::Sense() const {
 		Report(m_pLocation->GetSide(Direction::north));
 		Report(m_pLocation->GetSide(Direction::south));
 		Report(m_pLocation->GetSide(Direction::east));
 		Report(m_pLocation->GetSide(Direction::west));
 	}
+
 	void Player::Report(CaveSite* site)  const {
-		if (site->IsRoom()) {
+		if (site->GetType() == SiteType::Room) {
 			Room* room = dynamic_cast<Room*>(site);
 			if (room->IsTrapped()) {
 				switch (room->GetTrap()) {
@@ -40,19 +44,20 @@ namespace Wump {
 				}
 			}
 		}
-		else if (site->IsTunnel()) {
+		else if (site->GetType() == SiteType::Tunnel) {
 			Tunnel* tunnel = dynamic_cast<Tunnel*>(site);
 			Report(tunnel->OtherSide(m_pLocation));
 		}
 		else
 			return;
 	}
+
 	void Player::Shoot(Direction shoot) {
 		if (m_arrows <= 0)	// Can't shoot when you have no arrows
 			return;
 		else {
 			auto* shootAt = m_pLocation->GetSide(shoot);
-			if (shootAt->IsTunnel()) {	// Only check if its a tunnel because all rooms are connected by tunnels
+			if (shootAt->GetType() == SiteType::Tunnel) {	// Only check if its a tunnel because all rooms are connected by tunnels
 				Tunnel* shoot = dynamic_cast<Tunnel*>(shootAt);	// Ew casting, I checked it was safe before though. still...
 				Room* killRoom = shoot->OtherSide(m_pLocation);	// Get the room on the other side of this one
 				if (killRoom->IsTrapped()) {
@@ -73,6 +78,7 @@ namespace Wump {
 			Notify(this, Event::shoot);
 		}
 	}
+
 	void Player::Kill() {
 		m_alive = false;
 		Notify(this, Event::lose);
@@ -83,13 +89,16 @@ namespace Wump {
 		m_pastTrap = m_pLocation->GetTrap();
 		start->SetTrap(Room::wumpus);
 	}
+
 	void Wumpus::RegisterObserver(Observer* observe) {
 		observers.push_back(observe);
 	}
+
 	void Wumpus::UnregisterObserver(Observer* observe) {
 		for (auto iterator = observers.begin(); iterator != observers.end(); ++iterator)
 			if (*iterator == observe) observers.erase(iterator);
 	}
+
 	void Wumpus::Move(Direction moveTo) {
 		m_awake = true;
 		if (m_awake && IsAlive()) {	// Only move when alive and awake
@@ -102,6 +111,7 @@ namespace Wump {
 		m_awake = false;	// After every move, fall back asleep
 		Notify(this, Event::move);
 	}
+
 	void Wumpus::Kill() {
 		m_alive = false;
 		Notify(this, Event::win);

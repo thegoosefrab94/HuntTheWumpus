@@ -2,12 +2,14 @@
 #include <iostream>
 
 namespace Wump {
+
 	void CaveBuilder::CreateCave() {
 		if (!m_pCave)
 			m_pCave = new Cave();
 		else
 			return;
 	}
+
 	void CaveBuilder::CreateRoom(std::size_t num) {
 		// Create all the necessary parts of the room
 		Room* newRoom = new Room(num);
@@ -27,6 +29,7 @@ namespace Wump {
 		m_pCave->AddSite(wWall);
 		m_pCave->AddRoom(newRoom);
 	}
+
 	void CaveBuilder::CreateTunnel(std::size_t fromRoom, std::size_t toRoom, Direction dir) {
 		auto* left = m_pCave->RoomNumber(fromRoom);
 		auto* right = m_pCave->RoomNumber(toRoom);
@@ -36,6 +39,7 @@ namespace Wump {
 		m_pCave->ChangeSite(right->GetSide(OtherDirection(dir)), tun);
 		right->SetSide(OtherDirection(dir), tun);
 	}
+
 	void CaveBuilder::CreateWall() {
 		CaveSite* newWall = new Wall();
 		m_pCave->AddSite(newWall);

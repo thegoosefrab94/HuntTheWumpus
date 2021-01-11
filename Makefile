@@ -1,5 +1,5 @@
 CC = g++
-OBJECTS = Actors.o CaveBuilder.o CaveSites.o CaveSystem.o
+OBJECTS = Actors.o CaveSites.o CaveSystem.o CaveBuilder.o
 SRCDIR = ./src
 ODIR = ./Output
 UTILS_PATH = $(SRCDIR)/utils
@@ -23,7 +23,6 @@ CaveSystem.o: Actors.o CaveBuilder.o
 clean:
 	rm $(ODIR)/main
 	rm $(OBJ_PATHS)
-	rm $(ODIR)/*.txt
 
 run:
 	./$(ODIR)/main

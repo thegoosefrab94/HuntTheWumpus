@@ -1,2 +1,4 @@
-./Output/*.o
-./vscode/*
+Output/
+.vscode/
+Makefile
+wumpus.txt

@@ -10,6 +10,18 @@ namespace Wump {
 		return dis(gen);
 	}
 
+	CaveSystem::CaveSystem(std::ostream& os) :
+	 output{ os }, 
+	 m_pEnemyWumpus{ nullptr }, m_pCave{ nullptr }, areWeDone{ false }, 
+	 m_upCave{ nullptr }, m_upPlayer{ nullptr }, m_upEnemyWumpus{ nullptr } 
+	{}
+
+	void CaveSystem::Restart() {
+		areWeDone = false;
+		m_upPlayer.release();
+		m_upEnemyWumpus.release();
+	}
+
 	void CaveSystem::OnNotify(Actor* actor, Event e) {
 		if (actor->IsPlayer()) {	
 			HandlePlayer(actor, e);
@@ -17,11 +29,11 @@ namespace Wump {
 		else if (!actor->IsPlayer()) {	// For any other actor if only handles move and win
 			switch (e) {
 			case Event::move:
-				if (m_pEnemyWumpus->Location() == m_pPlayer->Location())
-					OnNotify(m_pPlayer, Event::lose);
+				if (m_pEnemyWumpus->Location() == m_upPlayer->Location())
+					OnNotify(m_upPlayer.get(), Event::lose);
 				break;
 			case Event::win:
-				OnNotify(m_pPlayer, e);
+				OnNotify(m_upPlayer.get(), e);
 			}
 		}
 	}
@@ -132,11 +144,12 @@ namespace Wump {
 		auto wumpCave = NumRoll(5, m_pCave->Size()-1);
 		wumpFile.open("wumpus.txt");
 		m_pEnemyWumpus = new Wumpus(wumpFile, m_pCave->RoomNumber(wumpCave));
+		m_upEnemyWumpus.reset(new Wumpus(wumpFile, m_pCave->RoomNumber(wumpCave)));
 		m_pEnemyWumpus->RegisterObserver(this);
 	}
 	void CaveSystem::AttachPlayer(Player* play) {
-		m_pPlayer = play;
-		m_pPlayer->RegisterObserver(this);
+		m_upPlayer.reset(play);
+		m_upPlayer->RegisterObserver(this);
 	}
 	CaveSystem::~CaveSystem() {
 		wumpFile.close();

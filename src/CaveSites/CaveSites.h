@@ -5,6 +5,8 @@
 
 namespace Wump {
 	enum class Direction { north, south, east, west };
+	enum class SiteType {Room, Tunnel, Wall};
+	
 	Direction OtherDirection(Direction d);
 
 	class Actor; // Forward declare of the Actor subclass
@@ -13,12 +15,11 @@ namespace Wump {
 	public:
 		using Output = std::ostream;
 		CaveSite() {  }
-		virtual void Enter(Actor*, Output&) = 0;	// All Enter functions return whether that site is safe to enter
-		virtual bool IsRoom() const = 0;	// I HATE THIS
-		virtual bool IsTunnel() const = 0;	// However I can't think of a better way to test
-		virtual bool IsWall() const = 0;
+		virtual void Enter(Actor*, Output&) = 0;
+		virtual SiteType GetType() const = 0;
 		virtual ~CaveSite() {  }
 	};
+
 
 	class Room : public CaveSite {
 	public:
@@ -27,9 +28,7 @@ namespace Wump {
 		Room(std::size_t num);
 
 		virtual void Enter(Actor*, Output&) override;
-		virtual bool IsRoom() const override { return true; }
-		virtual bool IsTunnel() const override { return false; }
-		virtual bool IsWall() const  override { return false; }
+		virtual SiteType GetType() const override { return SiteType::Room; }
 
 		void SetSide(Direction dir, CaveSite* side);
 		void SetTrap(Trap newTrap) { m_Trap = newTrap; }
@@ -53,9 +52,7 @@ namespace Wump {
 		Tunnel(Room* l, Room* r);
 
 		virtual void Enter(Actor*, Output&) override;
-		virtual bool IsRoom() const override { return false; }
-		virtual bool IsTunnel() const override { return true; }
-		virtual bool IsWall() const override { return false; }
+		virtual SiteType GetType() const override { return SiteType::Tunnel; }
 		Room* OtherSide(Room* curr);
 
 		virtual ~Tunnel() {  }
@@ -68,9 +65,7 @@ namespace Wump {
 	public:
 		Wall() {  }
 		virtual void Enter(Actor*, Output&) override;
-		virtual bool IsRoom() const override { return false; }
-		virtual bool IsTunnel() const override{ return false; }
-		virtual bool IsWall() const override { return true; }
+		virtual SiteType GetType() const override { return SiteType::Wall; }
 		virtual ~Wall() {  }
 	};
 
@@ -82,6 +77,7 @@ namespace Wump {
 		virtual void AddSite(CaveSite* newSite);
 		virtual void AddRoom(Room* newRoom);
 		auto Size() const { return m_Rooms.size(); }
+		
 		Room* RoomNumber(std::size_t num) const;
 		CaveSite* FindSite(CaveSite* findThis) const;
 		void ChangeSite(CaveSite* oldSite, CaveSite* newSite);

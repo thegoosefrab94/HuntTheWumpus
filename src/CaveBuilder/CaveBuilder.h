@@ -5,7 +5,7 @@ namespace Wump
 {
 	class CaveBuilder {	// Builds a cave from individual parts
 	public:
-		CaveBuilder() {  }	// Almost all virtual functions incase a later subclass needs to change something
+		CaveBuilder() : m_pCave(nullptr) {  }	// Almost all virtual functions incase a later subclass needs to change something
 		virtual void CreateCave();
 		virtual void CreateRoom(std::size_t num);
 		virtual void CreateTunnel(std::size_t fromRoom, std::size_t toRoom, Direction dir);
